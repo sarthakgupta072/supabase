@@ -2,6 +2,7 @@ import { StreamingTextResponse } from 'ai'
 import { chatRlsPolicy } from 'ai-commands/edge'
 import { NextRequest } from 'next/server'
 import OpenAI from 'openai'
+import { DatabasePoliciesData } from '../../../../data/database-policies/database-policies-query'
 
 export const runtime = 'edge'
 
@@ -42,13 +43,21 @@ async function handlePost(request: NextRequest) {
   const body = await (request.json() as Promise<{
     messages: { content: string; role: 'user' | 'assistant' }[]
     entityDefinitions: string[]
+    existingPolicies: DatabasePoliciesData
     policyDefinition: string
   }>)
 
-  const { messages, entityDefinitions, policyDefinition } = body
+  debugger
+  const { messages, entityDefinitions, existingPolicies, policyDefinition } = body
 
   try {
-    const stream = await chatRlsPolicy(openai, messages, entityDefinitions, policyDefinition)
+    const stream = await chatRlsPolicy(
+      openai,
+      messages,
+      entityDefinitions,
+      existingPolicies,
+      policyDefinition
+    )
     return new StreamingTextResponse(stream)
   } catch (error) {
     console.error(error)
